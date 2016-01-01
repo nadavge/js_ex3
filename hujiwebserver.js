@@ -1,10 +1,11 @@
 var hujinet = require('./hujinet');
+var net = require('net');
 
-module.exports.start = function(port, rootFolder, callback) {
-	return new serverObj(port, rootFolder, callback);
+module.exports.start = function(port, rootFolder, errorCallback) {
+	return new serverObj(port, rootFolder, errorCallback);
 }
 
-function serverObj(port, rootFolder, callback) {
+function serverObj(port, rootFolder, errorCallback) {
 	var server;
 	var connectionHandler;
 
@@ -17,7 +18,6 @@ function serverObj(port, rootFolder, callback) {
 
 	connectionHandler = new hujinet.connectionHandler(this);
 	server = net.createServer(connectionHandler.onConnection);
-
-	// Create the server
-	// Set listen on port, put the callback as the callback
+	server.on('error', errorCallback);
+	server.listen(port, errorCallback);
 }
