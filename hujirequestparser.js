@@ -88,8 +88,8 @@ module.exports.compose = function(version, statusCode, bodyType, bodyLength) {
     response += version.concat(SPACE_SEPARATOR, statusCode, LINE_SEPARATOR);
 
     //build both headers that describe the response body
-    response += BODY_TYPE_STR.concat(bodyType, LINE_SEPARATOR);
-    response += BODY_LENGTH_STR.concat(bodyLength, LINE_SEPARATOR);
+    response += BODY_TYPE_STR.concat(COLON_SEPARATOR, bodyType, LINE_SEPARATOR);
+    response += BODY_LENGTH_STR.concat(COLON_SEPARATOR, bodyLength, LINE_SEPARATOR);
     //writing the body content to the stream
     response += LINE_SEPARATOR;
 
