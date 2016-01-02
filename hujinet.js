@@ -13,34 +13,52 @@ var mimetypes = {
     'png': 'image/png'
     };
 
+var CONNECTION_TIMEOUT = 2000;
+
 module.exports.connectionHandler = function(server) {
     var myServer = server;
     var that = this;
 
     this.onConnection = function(conn) {
+        var timer = setTimeout(function() { conn.end(); }, CONNECTION_TIMEOUT);
         conn.on(
             'data',
             function(data) {
+                clearTimeout(timer);
+                timer = setTimeout(function() { conn.end(); }, CONNECTION_TIMEOUT);
+
                 var request;
-                // TODO maybe handle the data differently, since this is
-                // a stream, we might get it by chunks.. Need to check
                 data = data.toString('ascii', 0, data.length)
+
                 try {
                     request = requestparser.parse(data);
                     that.handleRequest(conn, request);
                 } catch (e) {
-                    console.log(e);
-                    // TODO handle exception
+                    conn.end();
                 }
-            });
+            }
+        );
+
+        conn.on(
+            'end',
+            function() {
+                clearTimeout(timer);
+            }
+        );
     }
 
     this.handleRequest = function(conn, request) {
         var filepath;
 
+        // Avoid access from outside the rootFolder
         if (! path.isAbsolute(request.uri)) {
-            //TODO handle access denied / 404
-            console.log('File is going to be out');
+            response = requestparser.compose(
+                request.version,
+                '403 Bad Request',
+                mimetypes['html'],
+                0);
+
+            conn.write(response);
         }
 
         filepath = path.join(myServer.rootFolder, request.uri);
@@ -51,12 +69,23 @@ module.exports.connectionHandler = function(server) {
             var extension;
 
             if (err) {
-                // TODO return 404
-                console.log('File isnt available');
+                response = requestparser.compose(
+                    request.version,
+                    '404 Not Found',
+                    mimetypes['html'],
+                    0);
+
+                conn.write(response);
                 return;
             }
             if (! stats.isFile()) {
-                console.log('Isn\'t file');
+                response = requestparser.compose(
+                    request.version,
+                    '403 Forbidden',
+                    mimetypes['html'],
+                    0);
+
+                conn.write(response);
                 return;
             }
 
@@ -73,10 +102,14 @@ module.exports.connectionHandler = function(server) {
 
             conn.write(response);
             filestream.pipe(conn);
-        });
-        //response.pipe(connection);
 
-        // Close connection of necessary
+            if ((request.headers['Connection'] !== 'keep-alive' &&
+                request.version === 'HTTP/1.0') ||
+                request.headers['Connection'] === 'close')
+            {
+                conn.end();
+            }
+        });
     }
 }
 
