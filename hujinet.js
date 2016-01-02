@@ -3,6 +3,16 @@ var requestparser = require('./hujirequestparser');
 var path = require('path');
 var fs = require('fs');
 
+var mimetypes = {
+    'js': 'application/javascript',
+    'txt': 'text/plain',
+    'html': 'text/html',
+    'css': 'text/css',
+    'jpg': 'image/jpeg',
+    'gif': 'image/gif',
+    'png': 'image/png'
+    };
+
 module.exports.connectionHandler = function(server) {
     var myServer = server;
     var that = this;
@@ -48,6 +58,7 @@ module.exports.connectionHandler = function(server) {
                 return;
             }
 
+            
             console.log(stats.size);
         });
         //response.pipe(connection);
