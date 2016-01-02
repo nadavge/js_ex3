@@ -18,7 +18,6 @@ module.exports.connectionHandler = function(server) {
     var that = this;
 
     this.onConnection = function(conn) {
-        console.log('Connection!'); //TODO remove
         conn.on(
             'data',
             function(data) {
@@ -26,10 +25,8 @@ module.exports.connectionHandler = function(server) {
                 // TODO maybe handle the data differently, since this is
                 // a stream, we might get it by chunks.. Need to check
                 data = data.toString('ascii', 0, data.length)
-                console.log('Incoming request:\n\n' + data);
                 try {
                     request = requestparser.parse(data);
-                    console.log(request);
                     that.handleRequest(conn, request);
                 } catch (e) {
                     console.log(e);
@@ -48,6 +45,11 @@ module.exports.connectionHandler = function(server) {
 
         filepath = path.join(myServer.rootFolder, request.uri);
         fs.stat(filepath, function(err, stats) {
+            var response;
+            var filesize;
+            var filestream;
+            var extension;
+
             if (err) {
                 // TODO return 404
                 console.log('File isnt available');
@@ -58,8 +60,19 @@ module.exports.connectionHandler = function(server) {
                 return;
             }
 
-            
-            console.log(stats.size);
+            filesize = stats.size;
+            extension = path.extname(filepath);
+            filestream = fs.createReadStream(filepath);
+
+            response = requestparser.compose(
+                request.version,
+                '200 OK',
+                mimetypes[extension],
+                filesize
+            );
+
+            conn.write(response);
+            filestream.pipe(conn);
         });
         //response.pipe(connection);
 
