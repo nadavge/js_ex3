@@ -38,11 +38,11 @@ module.exports.parse = function(requestString) {
     //split by lines, remove first useless line
     var request = new HttpRequest();
     var requestLines = requestString.split(LINE_SEPARATOR);
-    requestLines.splice(0,1);
 
     //parse first request line
     var firstHeaderParts = parseFirstHeader(requestLines[0]);
     request.method = firstHeaderParts[HTTP_METHOD];
+	console.log(request.method);
     if(isMethodValid(request.method) == false)
     {
         throw REQUEST_METHOD_RESTRICTION;
