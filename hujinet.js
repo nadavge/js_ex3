@@ -64,7 +64,8 @@ module.exports.connectionHandler = function(server) {
                 request.version,
                 '403 Bad Request',
                 mimetypes['html'],
-                0);
+                0
+            );
 
             conn.write(response);
         }
@@ -81,7 +82,8 @@ module.exports.connectionHandler = function(server) {
                     request.version,
                     '404 Not Found',
                     mimetypes['html'],
-                    0);
+                    0
+                );
 
                 conn.write(response);
                 return;
@@ -91,7 +93,8 @@ module.exports.connectionHandler = function(server) {
                     request.version,
                     '403 Forbidden',
                     mimetypes['html'],
-                    0);
+                    0
+                );
 
                 conn.write(response);
                 return;
