@@ -20,4 +20,8 @@ function serverObj(port, rootFolder, errorCallback) {
     server = net.createServer(connectionHandler.onConnection);
     server.on('error', errorCallback);
     server.listen(port, errorCallback);
+
+	this.stop = function(callback) {
+		server.close(callback);
+	}
 }
