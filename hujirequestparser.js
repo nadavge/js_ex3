@@ -89,16 +89,16 @@ function isMethodValid(method)
 }
 
 module.exports.compose = function(version, statusCode, bodyType, bodyLength, bodyStream) {
-	// create the response stream
-	var responseStream = new Readable();
+    // create the response stream
+    var responseStream = new Readable();
     // add the first response header to the stream
     var responseFirstHeader = version.concat(SPACE_SEPARATOR, statusCode, LINE_SEPARATOR);
-	responseStream.push(responseFirstHeader);
+    responseStream.push(responseFirstHeader);
 
     //build both headers that describe the response body
     var bodyTypeHeader = BODY_TYPE_STR.concat(bodyType, LINE_SEPARATOR);
     var bodyLengthHeader = BODY_LENGTH_STR.concat(bodyLength, LINE_SEPARATOR);
-	responseStream.push(bodyTypeHeader);
+    responseStream.push(bodyTypeHeader);
     responseStream.push(bodyLengthHeader);
 
     //writing the body content to the stream
@@ -106,6 +106,6 @@ module.exports.compose = function(version, statusCode, bodyType, bodyLength, bod
     responseStream.push(bodyStream);
 
     //terminate the stream, and return it.
-	responseStream.push(null);
-	return responseStream;
+    responseStream.push(null);
+    return responseStream;
 }
