@@ -38,6 +38,9 @@ module.exports.parse = function(requestString) {
     //split by lines, remove first useless line
     var request = new HttpRequest();
     var requestLines = requestString.split(LINE_SEPARATOR);
+    var header;
+	var headerKey;
+	var headerBody;
 
     //parse first request line
     var firstHeaderParts = parseFirstHeader(requestLines[0]);
@@ -55,27 +58,17 @@ module.exports.parse = function(requestString) {
     //build the headers dictionary
     request.headers = [];
 
-    var headerLine = requestLines.shift();
-    var headerLineParts = null;
-    var headerLineKey = null;
-    var headerLineBody = null;
-
-    //that should be the divider btw the headers and the body.
-    if(headerLine == "")
+    while ((header = requestLines.shift()) !== undefined && header !== '')
     {
-        throw REQUEST_FORMAT_INVALID;
+		header = header.split(COLON_SEPARATOR);
+		// Headers must have a key and a body
+		if (header.length < 2) {
+            throw REQUEST_FORMAT_INVALID;
+		}
+        headerKey = header.shift();
+        headerBody = header.join(COLON_SEPARATOR).trim();
+        request.headers[headerKey] = headerBody;
     }
-
-    //go through all the header lines, add them to dict.
-    do
-    {
-        headerLineParts = headerLine.split(COLON_SEPARATOR);
-        headerLineKey = headerLine.shift();
-        headerLineBody = headerLine.join(COLON_SEPARATOR).trim();
-        request.headers[headerLineKey] = headerLineBody;
-
-        headerLine = requestLines.shift();
-    }while ((requestLines.length > 0) && (headerLine != ""));
 
     //all the remaining lines in requestLines are the request body.
     request.body = requestLines.join(LINE_SEPARATOR);
