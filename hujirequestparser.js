@@ -19,8 +19,9 @@ function HttpRequest()
 {
     this.method = null;
     this.uri = null;
+    this.params = '';
     this.version = null;
-    this.headers = null;
+    this.headers = [];
     this.body = null;
 }
 
@@ -45,18 +46,21 @@ module.exports.parse = function(requestString) {
     //parse first request line
     var firstHeaderParts = parseFirstHeader(requestLines[0]);
     request.method = firstHeaderParts[HTTP_METHOD];
-	console.log(request.method);
+
     if(isMethodValid(request.method) == false)
     {
         throw REQUEST_METHOD_RESTRICTION;
     }
 
-    request.uri = firstHeaderParts[HTTP_URI];
+    request.uri = firstHeaderParts[HTTP_URI].split('?');
+    if (request.uri[1] !== undefined) {
+        request.params = request.uri[1];
+    }
+    request.uri = request.uri[0];
+    console.log(request.uri);
+    console.log(request.params);
     request.version = firstHeaderParts[HTTP_VERSION];
     requestLines.splice(0,1);
-
-    //build the headers dictionary
-    request.headers = [];
 
     while ((header = requestLines.shift()) !== undefined && header !== '')
     {
