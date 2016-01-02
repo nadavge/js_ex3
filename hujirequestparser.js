@@ -53,7 +53,7 @@ module.exports.parse = function(requestString) {
     requestLines.splice(0,1);
 
     //build the headers dictionary
-    var headerLines = [];
+    request.headers = [];
 
     var headerLine = requestLines.shift();
     var headerLineParts = null;
@@ -72,12 +72,11 @@ module.exports.parse = function(requestString) {
         headerLineParts = headerLine.split(COLON_SEPARATOR);
         headerLineKey = headerLine.shift();
         headerLineBody = headerLine.join(COLON_SEPARATOR).trim();
-        headerLines[headerLineKey] = headerLineBody;
+        request.headers[headerLineKey] = headerLineBody;
 
         headerLine = requestLines.shift();
     }while ((requestLines.length > 0) && (headerLine != ""));
 
-    request.headers = headerLines;
     //all the remaining lines in requestLines are the request body.
     request.body = requestLines.join(LINE_SEPARATOR);
     return request;
