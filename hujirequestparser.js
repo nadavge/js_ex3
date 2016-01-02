@@ -19,8 +19,9 @@ function HttpRequest()
 {
     this.method = null;
     this.uri = null;
+    this.params = '';
     this.version = null;
-    this.headers = null;
+    this.headers = [];
     this.body = null;
 }
 
@@ -38,46 +39,39 @@ module.exports.parse = function(requestString) {
     //split by lines, remove first useless line
     var request = new HttpRequest();
     var requestLines = requestString.split(LINE_SEPARATOR);
-    requestLines.splice(0,1);
+    var header;
+	var headerKey;
+	var headerBody;
 
     //parse first request line
     var firstHeaderParts = parseFirstHeader(requestLines[0]);
     request.method = firstHeaderParts[HTTP_METHOD];
+
     if(isMethodValid(request.method) == false)
     {
         throw REQUEST_METHOD_RESTRICTION;
     }
 
-    request.uri = firstHeaderParts[HTTP_URI];
+    request.uri = firstHeaderParts[HTTP_URI].split('?');
+    if (request.uri[1] !== undefined) {
+        request.params = request.uri[1];
+    }
+    request.uri = request.uri[0];
     request.version = firstHeaderParts[HTTP_VERSION];
     requestLines.splice(0,1);
 
-    //build the headers dictionary
-    var headerLines = [];
-
-    var headerLine = requestLines.shift();
-    var headerLineParts = null;
-    var headerLineKey = null;
-    var headerLineBody = null;
-
-    //that should be the divider btw the headers and the body.
-    if(headerLine == "")
+    while ((header = requestLines.shift()) !== undefined && header !== '')
     {
-        throw REQUEST_FORMAT_INVALID;
+		header = header.split(COLON_SEPARATOR);
+		// Headers must have a key and a body
+		if (header.length < 2) {
+            throw REQUEST_FORMAT_INVALID;
+		}
+        headerKey = header.shift();
+        headerBody = header.join(COLON_SEPARATOR).trim();
+        request.headers[headerKey] = headerBody;
     }
 
-    //go through all the header lines, add them to dict.
-    do
-    {
-        headerLineParts = headerLine.split(COLON_SEPARATOR);
-        headerLineKey = headerLine.shift();
-        headerLineBody = headerLine.join(COLON_SEPARATOR).trim();
-        headerLines[headerLineKey] = headerLineBody;
-
-        headerLine = requestLines.shift();
-    }while ((requestLines.length > 0) && (headerLine != ""));
-
-    request.headers = headerLines;
     //all the remaining lines in requestLines are the request body.
     request.body = requestLines.join(LINE_SEPARATOR);
     return request;
@@ -88,24 +82,16 @@ function isMethodValid(method)
     return (method == GET_REQUEST_METHOD);
 }
 
-module.exports.compose = function(version, statusCode, bodyType, bodyLength, bodyStream) {
-	// create the response stream
-	var responseStream = new Readable();
+module.exports.compose = function(version, statusCode, bodyType, bodyLength) {
+    var response = '';
     // add the first response header to the stream
-    var responseFirstHeader = version.concat(SPACE_SEPARATOR, statusCode, LINE_SEPARATOR);
-	responseStream.push(responseFirstHeader);
+    response += version.concat(SPACE_SEPARATOR, statusCode, LINE_SEPARATOR);
 
     //build both headers that describe the response body
-    var bodyTypeHeader = BODY_TYPE_STR.concat(bodyType, LINE_SEPARATOR);
-    var bodyLengthHeader = BODY_LENGTH_STR.concat(bodyLength, LINE_SEPARATOR);
-	responseStream.push(bodyTypeHeader);
-    responseStream.push(bodyLengthHeader);
-
+    response += BODY_TYPE_STR.concat(COLON_SEPARATOR, bodyType, LINE_SEPARATOR);
+    response += BODY_LENGTH_STR.concat(COLON_SEPARATOR, bodyLength, LINE_SEPARATOR);
     //writing the body content to the stream
-    responseStream.push(LINE_SEPARATOR);
-    responseStream.push(bodyStream);
+    response += LINE_SEPARATOR;
 
-    //terminate the stream, and return it.
-	responseStream.push(null);
-	return responseStream;
+    return response;
 }
