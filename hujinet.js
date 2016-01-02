@@ -4,10 +4,10 @@ var path = require('path');
 var fs = require('fs');
 
 var mimetypes = {
-    'js': 'application/javascript',
-    'txt': 'text/plain',
-    'html': 'text/html',
-    'css': 'text/css',
+    'js': 'application/javascript; charset=utf-8;',
+    'txt': 'text/plain; charset=utf-8;',
+    'html': 'text/html; charset=utf-8;',
+    'css': 'text/css; charset=utf-8;',
     'jpg': 'image/jpeg',
     'gif': 'image/gif',
     'png': 'image/png'
@@ -101,7 +101,7 @@ module.exports.connectionHandler = function(server) {
             }
 
             filesize = stats.size;
-            extension = path.extname(filepath);
+            extension = path.extname(filepath).substring(1);
             filestream = fs.createReadStream(filepath);
 
             response = requestparser.compose(
