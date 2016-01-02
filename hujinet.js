@@ -24,17 +24,25 @@ module.exports.connectionHandler = function(server) {
         conn.on(
             'data',
             function(data) {
+                var request;
+                var response;
+
                 clearTimeout(timer);
                 timer = setTimeout(function() { conn.end(); }, CONNECTION_TIMEOUT);
 
-                var request;
                 data = data.toString('ascii', 0, data.length)
 
                 try {
                     request = requestparser.parse(data);
                     that.handleRequest(conn, request);
                 } catch (e) {
-                    conn.end();
+                    response = requestparser.compose(
+                        'HTTP/1.0',
+                        '500 Internal Server Error',
+                        mimetypes['html'],
+                        0);
+
+                    conn.end(response);
                 }
             }
         );
