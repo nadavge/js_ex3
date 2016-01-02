@@ -16,18 +16,24 @@ function parseFirstHeader(header) {
     return headerPartsDivided;
 }
 
+var REQUEST_METHOD_RESTRICTION = new Error("This server only accepts GET requests!");
 var REQUEST_FORMAT_INVALID = new Error("The provided HTTP request format was invalid!");
 
-module.exports.parse = function(request) {
+module.exports.parse = function(requestString) {
 
     //split by lines, remove first useless line
     var request = new HttpRequest();
-    var requestLines = request.split('\r\n');
+    var requestLines = requestString.split('\r\n');
     requestLines.splice(0,1);
 
     //parse first request line
     var firstHeaderParts = parseFirstHeader(requestLines[0]);
     request.method = firstHeaderParts['method'];
+    if(isMethodValid(request.method) == false)
+    {
+        throw REQUEST_METHOD_RESTRICTION;
+    }
+
     request.uri = firstHeaderParts['uri'];
     request.version = firstHeaderParts['version'];
     requestLines.splice(0,1);
@@ -58,19 +64,37 @@ module.exports.parse = function(request) {
     }while ((requestLines.length > 0) && (headerLine != ""));
 
     request.headers = headerLines;
-
     //all the remaining lines in requestLines are the request body.
-
     request.body = requestLines.join("\r\n");
-
     return request;
 }
 
-module.exports.compose = function(bodyLength, bodyStream) {
-	// Returns a stream
+function isMethodValid(method)
+{
+    return (method == "GET");
+}
+
+var BODY_TYPE_STR = "Content-Type";
+var BODY_LENGTH_STR = "Content-Length";
+
+module.exports.compose = function(version, statusCode, bodyType, bodyLength, bodyStream) {
+	// create the response stream
 	var responseStream = new Readable();
-	responseStream.push(....);
-	responseStream.push(bodyStream);
+    // add the first response header to the stream
+    var responseFirstHeader = version.concat(' ', statusCode, '\r\n');
+	responseStream.push(responseFirstHeader);
+
+    //build both headers that describe the response body
+    var bodyTypeHeader = BODY_TYPE_STR.concat(bodyType, '\r\n');
+    var bodyLengthHeader = BODY_LENGTH_STR.concat(bodyLength, '\r\n');
+	responseStream.push(bodyTypeHeader);
+    responseStream.push(bodyLengthHeader);
+
+    //writing the body content to the stream
+    responseStream.push('\r\n');
+    responseStream.push(bodyStream);
+
+    //terminate the stream, and return it.
 	responseStream.push(null);
 	return responseStream;
 }
