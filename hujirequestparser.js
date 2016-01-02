@@ -57,8 +57,6 @@ module.exports.parse = function(requestString) {
         request.params = request.uri[1];
     }
     request.uri = request.uri[0];
-    console.log(request.uri);
-    console.log(request.params);
     request.version = firstHeaderParts[HTTP_VERSION];
     requestLines.splice(0,1);
 
