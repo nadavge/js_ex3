@@ -8,25 +8,8 @@ var rootFolder = './ex2';
 var NUM_OF_CONCURRENT = 1000;
 var SUCCESS_STATUS_CODE = 200;
 
-//function errorHandler(getError)
-//{
-//    console.log('Woops! something happend: ' + getError.message);
-//}
-//
-//function getHandler(getResult)
-//{
-//    if(getResult.statusCode != SUCCESS_STATUS_CODE)
-//    {
-//        console.log('A request has gone bad! Error Code:' + getResult.statusCode);
-//    }
-//
-//    else
-//    {
-//        console.log('requested successfully!');
-//    }
-//
-//    getResult.resume();
-//}
+var numOfSuccess = 0;
+var numOfFails = 0;
 
 serverObj = hujiServer.start(servPort, rootFolder, function(e){
 
@@ -37,7 +20,7 @@ serverObj = hujiServer.start(servPort, rootFolder, function(e){
         runTests();
         setTimeout(function() {
             serverObj.stop();
-			// Print statistics or something
+			console.log('Successes: ' + numOfSuccess +', Fails: ' + numOfFails);
         }, 5000);
     }
 });
@@ -45,8 +28,6 @@ serverObj = hujiServer.start(servPort, rootFolder, function(e){
 
 function runTests()
 {
-    //var tempGetResponse;
-
     for(var i = 0; i < NUM_OF_CONCURRENT; i++)
     {
 		var req = http.get({
@@ -54,26 +35,18 @@ function runTests()
 				path: '/index.html'
 			},
 			function (response) {
-				// Count if success
+				if(response.statusCode == SUCCESS_STATUS_CODE)
+                {
+                    numOfSuccess++;
+                }
+
+                else
+                {
+                    numOfFails++;
+                }
 			}
-		).on('error', function(error) {
-			// Count if error
-			
-		});
+		);
     }
 
     console.log("Finished Load Testing!");
-
-}
-
-function testOk() {
-    http.get({
-            port: servPort,
-            path: '/index.html'
-        },
-        function (response) {
-            console.log('testOk result:');
-            console.log((response.statusCode === SUCCESS_STATUS_CODE) ? 'Success' : 'Failed');
-        }
-    );
 }
