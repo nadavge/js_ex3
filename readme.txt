@@ -20,4 +20,8 @@ What did you do to make the server efficient?
 
 How did you test your server?
 
---- TODO fill
+--- As a normal test, we've tested either a case in which the file is actually present,
+    a case in which the file shouldn't be found, a case in which the access to the file
+    is forbidden, and finally a case of internal error.
+    In our load tests, we actually tried several amount of get requests together,
+    when implementing it in a for look is valid because the get requests are a-sync.
