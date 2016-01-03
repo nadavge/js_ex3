@@ -45,8 +45,8 @@ function runTests()
                     numOfFails++;
                 }
 			}
-		);
+		).on('error', function() {
+			numOfFails++;
+		});
     }
-
-    console.log("Finished Load Testing!");
 }
