@@ -25,3 +25,4 @@ How did you test your server?
     is forbidden, and finally a case of internal error.
     In our load tests, we actually tried several amount of get requests together,
     when implementing it in a for look is valid because the get requests are a-sync.
+	Our statistics show that around 750 requests the server starts dropping connections.
