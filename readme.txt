@@ -26,3 +26,7 @@ How did you test your server?
     In our load tests, we actually tried several amount of get requests together,
     when implementing it in a for look is valid because the get requests are a-sync.
 	Our statistics show that around 750 requests the server starts dropping connections.
+
+Comment:
+
+--- We were approved to submit this exercise late, by Omer. thanks again!
