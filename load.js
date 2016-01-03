@@ -1,11 +1,11 @@
 var serverObj;
-var httpModule = require('http');
+var http = require('http');
 var hujiServer = require('./hujiwebserver');
 var servPort = 1337;
 //var filePath = '/index.html';
 var rootFolder = './ex2';
 //var fileUri = 'http://localhost:' + servPort + filePath;
-var NUM_OF_CONCURRENT = 1;
+var NUM_OF_CONCURRENT = 1000;
 var SUCCESS_STATUS_CODE = 200;
 
 //function errorHandler(getError)
@@ -37,7 +37,8 @@ serverObj = hujiServer.start(servPort, rootFolder, function(e){
         runTests();
         setTimeout(function() {
             serverObj.stop();
-        }, 1500);
+			// Print statistics or something
+        }, 5000);
     }
 });
 
@@ -48,9 +49,17 @@ function runTests()
 
     for(var i = 0; i < NUM_OF_CONCURRENT; i++)
     {
-        console.log('Starting request num: ' + (i+1));
-        //tempGetResponse = httpModule.get(fileUri, getHandler).on('error',errorHandler);
-        testOk();
+		var req = http.get({
+				port: servPort,
+				path: '/index.html'
+			},
+			function (response) {
+				// Count if success
+			}
+		).on('error', function(error) {
+			// Count if error
+			
+		});
     }
 
     console.log("Finished Load Testing!");
@@ -58,7 +67,7 @@ function runTests()
 }
 
 function testOk() {
-    httpModule.get({
+    http.get({
             port: servPort,
             path: '/index.html'
         },
